@@ -20,12 +20,14 @@ import numpy
 from numpy import newaxis
 import keras.regularizers as regularizers
 from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import MinMaxScaler
 
 
 
 tsteps = 20
-batch_size = 25
-epochs = 25
+batch_size = 10
+batch_size_pred = 156
+epochs = 50
 
 history = callbacks.History()
 
@@ -37,11 +39,12 @@ train = dataframeTrain.values
 test = dataframeTest.values
 
 # split into input (X) and output (Y) variables
-X_train = train[0:10000,6:26]
-y_train = train[0:10000,27]
+X_train = train[0:5000,6:26]
+y_train = train[0:5000,27]
 X_test = test[53:209,6:26] #Sequence 2
 y_test = test[53:209,27]
 
+"""
 #Trainingsdatensatz Standardisieren
 sc = StandardScaler()
 sc.fit(X_train)
@@ -51,6 +54,12 @@ X_train = sc.transform(X_train)
 sc = StandardScaler()
 sc.fit(X_test)
 X_test = sc.transform(X_test)
+"""
+# normalize the dataset
+scaler = MinMaxScaler(feature_range=(0, 1))
+X_train = scaler.fit_transform(X_train)
+X_test = scaler.fit_transform(X_test)
+
 
 #Reshape from 2D to 3D Array
 X_train = X_train[:, :, None]
@@ -60,9 +69,10 @@ X_test = X_test[:, :, None]
 
 
 adam = optimizers.Adam(lr=0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
-sgd = optimizers.SGD(lr=0.01, momentum=0.0, decay=0.05, nesterov=False)
 reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
-                              patience=10, min_lr=0.0002)
+                              patience=5, min_lr=0.0001)
+early_stopping = callbacks.EarlyStopping(monitor='val_loss', patience=3, 
+                                         mode='auto')
 
 print(len(X_train), 'train sequences')
 print(len(X_test), 'test sequences')
@@ -77,10 +87,13 @@ def lstm():
                    input_shape=(tsteps, 1),
                    batch_size=batch_size,
                    return_sequences=True,
-                   stateful=True, activation='relu'))
-    model.add(LSTM(50,
+                   stateful=True, activation='tanh'))
+    model.add(LSTM(25,
+                   return_sequences=True,
+                   stateful=True, activation='tanh'))
+    model.add(LSTM(2,
                    return_sequences=False,
-                   stateful=True, activation='relu'))
+                   stateful=True, activation='tanh'))
     model.add(Dense(1, activation='linear'))
     model.compile(loss='mse', optimizer=adam)  
     return model
@@ -89,17 +102,17 @@ print('Build model...')
 model = lstm()
 
 print('Train...')
-his = model.fit(X_train, y_train, batch_size=batch_size, epochs=50, verbose=1, 
-      callbacks=[history, reduce_lr], validation_split=0.0, 
+his = model.fit(X_train, y_train, batch_size=batch_size, epochs=epochs, verbose=1, 
+      callbacks=[history, reduce_lr], validation_split=0.2, 
       validation_data=None, class_weight=None, 
       sample_weight=None, initial_epoch=0, shuffle=True)
 
-score = model.evaluate(X_test, y_test,
-                            batch_size=batch_size)
+#score = model.evaluate(X_test, y_test,
+                            #batch_size=batch_size)
 
-pred = model.predict(X_test)
+#pred = model.predict(X_test, batch_size=batch_size_pred)
 
-
+"""
 #Berechne Mean Squared Error
 mseFull = numpy.mean((y_test - pred)**2)
 print("MSE: %d" %mseFull)
@@ -120,5 +133,5 @@ plt.xlabel("Epochs")
 plt.show()
 
 
-
+"""
 
