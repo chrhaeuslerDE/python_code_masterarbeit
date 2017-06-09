@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from __future__ import print_function
 """
 Created on Mon May 15 13:18:16 2017
 
-@author: entwicklung
-"""
-#
-from __future__ import print_function
+@author: entwicklung"""
 
 from keras.preprocessing import sequence
 from keras.models import Sequential
@@ -24,7 +22,10 @@ import keras.regularizers as regularizers
 from sklearn.preprocessing import StandardScaler
 
 
-batch_size = 300
+
+tsteps = 20
+batch_size = 25
+epochs = 25
 
 history = callbacks.History()
 
@@ -52,9 +53,9 @@ sc.fit(X_test)
 X_test = sc.transform(X_test)
 
 #Reshape from 2D to 3D Array
-X_train = X_train[:, :, newaxis]
+X_train = X_train[:, :, None]
 #y_train = y_train[:, :, newaxis]
-X_test = X_test[:, :, newaxis]
+X_test = X_test[:, :, None]
 #y_test = y_test[:, :, newaxis]
 
 
@@ -72,13 +73,16 @@ print('x_test shape:', X_test.shape)
 
 def lstm():
     model = Sequential()
-    model.add(LSTM(10, input_shape=X_train.shape[1:], return_sequences=True, 
-            activity_regularizer=regularizers.l1(0.01), activation='relu'))
-    model.add(LSTM(2, return_sequences=True, dropout=0.2, 
-                   recurrent_dropout=0.2, activity_regularizer=regularizers.l1(0.01), 
-                   activation='relu'))
-    model.add(LSTM(1, activation='linear'))
-    model.compile(loss='mean_squared_error', optimizer=adam)    
+    model.add(LSTM(50,
+                   input_shape=(tsteps, 1),
+                   batch_size=batch_size,
+                   return_sequences=True,
+                   stateful=True))
+    model.add(LSTM(50,
+                   return_sequences=False,
+                   stateful=True))
+    model.add(Dense(1))
+    model.compile(loss='mse', optimizer=adam)  
     return model
 
 print('Build model...')
