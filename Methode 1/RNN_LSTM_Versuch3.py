@@ -4,7 +4,8 @@ from __future__ import print_function
 """
 Created on Mon May 15 13:18:16 2017
 
-@author: entwicklung""" ###
+@author: entwicklung""" ########
+#bla neue funktion
 
 from keras.preprocessing import sequence
 from keras.models import Sequential
