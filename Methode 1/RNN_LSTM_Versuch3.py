@@ -77,11 +77,11 @@ def lstm():
                    input_shape=(tsteps, 1),
                    batch_size=batch_size,
                    return_sequences=True,
-                   stateful=True))
+                   stateful=True, activation='relu'))
     model.add(LSTM(50,
                    return_sequences=False,
-                   stateful=True))
-    model.add(Dense(1))
+                   stateful=True, activation='relu'))
+    model.add(Dense(1, activation='linear'))
     model.compile(loss='mse', optimizer=adam)  
     return model
 
