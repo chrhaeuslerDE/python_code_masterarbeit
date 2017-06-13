@@ -1,140 +1,103 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-from __future__ import print_function
 """
-Created on Mon May 15 13:18:16 2017
+Created on Tue Jun 13 09:56:23 2017
 
-@author: entwicklung"""
+@author: entwicklung
+"""
 
-from keras.preprocessing import sequence
-from keras.models import Sequential
-from keras.layers import Dense, Embedding
-from keras.layers import LSTM
-from keras.layers import SimpleRNN
-from keras.datasets import imdb
-import pandas
-import matplotlib.pyplot as plt
-from keras import optimizers
-from keras import callbacks
+# LSTM for international airline passengers problem with regression framing
 import numpy
-from numpy import newaxis
-import keras.regularizers as regularizers
-from sklearn.preprocessing import StandardScaler
+import matplotlib.pyplot as plt
+from pandas import read_csv
+import math, pandas
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.layers import LSTM
 from sklearn.preprocessing import MinMaxScaler
+from sklearn.metrics import mean_squared_error
 
+# convert an array of values into a dataset matrix
+def create_dataset(dataset, look_back=1):
+	dataX, dataY = [], []
+	for i in range(len(dataset)-look_back-1):
+		a = dataset[i:(i+look_back), 0]
+		dataX.append(a)
+		dataY.append(dataset[i + look_back, 0])
+	return numpy.array(dataX), numpy.array(dataY)
 
+# fix random seed for reproducibility
+numpy.random.seed(7)
 
-tsteps = 20
-batch_size = 10
-batch_size_pred = 156
-epochs = 50
-
-history = callbacks.History()
-
+# load the dataset
 print('Loading data...')
-
 dataframeTrain = pandas.DataFrame(pandas.read_csv('train.txt', sep = ' '))
 dataframeTest = pandas.DataFrame(pandas.read_csv('test.txt', sep = ' '))
-train = dataframeTrain.values
-test = dataframeTest.values
+datasetTr = dataframeTrain.values
+datasetTr = datasetTr.astype('float32')
+datasetTe = dataframeTest.values
+datasetTe = datasetTe.astype('float32')
 
-# split into input (X) and output (Y) variables
-X_train = train[0:5000,6:26]
-y_train = train[0:5000,27]
-X_test = test[53:209,6:26] #Sequence 2
-y_test = test[53:209,27]
 
-"""
-#Trainingsdatensatz Standardisieren
-sc = StandardScaler()
-sc.fit(X_train)
-X_train = sc.transform(X_train)
-
-#Testdatensatz Standardisieren
-sc = StandardScaler()
-sc.fit(X_test)
-X_test = sc.transform(X_test)
-"""
 # normalize the dataset
 scaler = MinMaxScaler(feature_range=(0, 1))
-X_train = scaler.fit_transform(X_train)
-X_test = scaler.fit_transform(X_test)
+datasetTr = scaler.fit_transform(datasetTr)
 
-
-#Reshape from 2D to 3D Array
-X_train = X_train[:, :, None]
-#y_train = y_train[:, :, newaxis]
-X_test = X_test[:, :, None]
-#y_test = y_test[:, :, newaxis]
-
-
-
-adam = optimizers.Adam(lr=0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
-reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
-                              patience=5, min_lr=0.0001)
-early_stopping = callbacks.EarlyStopping(monitor='val_loss', patience=3, 
-                                         mode='auto')
-
-print(len(X_train), 'train sequences')
-print(len(X_test), 'test sequences')
-print('Pad sequences (samples x time)')
-print('x_train shape:', X_train.shape)
-print('x_test shape:', X_test.shape)
-
-
-def lstm():
-    model = Sequential()
-    model.add(LSTM(50,
-                   input_shape=(tsteps, 1),
-                   batch_size=batch_size,
-                   return_sequences=True,
-                   stateful=True, activation='tanh'))
-    model.add(LSTM(25,
-                   return_sequences=True,
-                   stateful=True, activation='tanh'))
-    model.add(LSTM(2,
-                   return_sequences=False,
-                   stateful=True, activation='tanh'))
-    model.add(Dense(1, activation='linear'))
-
-    model.compile(loss='mse', optimizer=adam)  
-    return model
-
-print('Build model...')
-model = lstm()
-
-print('Train...')
-
-his = model.fit(X_train, y_train, batch_size=batch_size, epochs=50, verbose=1, 
-      callbacks=[history, reduce_lr, early_stopping], validation_split=0.0, 
-      validation_data=None, class_weight=None, 
-      sample_weight=None, initial_epoch=0, shuffle=True)
-
-#score = model.evaluate(X_test, y_test,
-                            #batch_size=batch_size)
-
-#pred = model.predict(X_test, batch_size=batch_size_pred)
+scaler = MinMaxScaler(feature_range=(0, 1))
+datasetTe = scaler.fit_transform(datasetTe)
 
 """
-#Berechne Mean Squared Error
-mseFull = numpy.mean((y_test - pred)**2)
-print("MSE: %d" %mseFull)
-#Time Series Plot
-orgLine = plt.plot(y_test, color='blue', label='Original')
-predLine = plt.plot(pred, color='red', label='Predict')
-plt.legend()
-plt.title('Original vs. Predict Output (Seq: 2)')
-plt.show()
-
-#IMport list to array
-x_plot = numpy.asanyarray(his.epoch)
-y_plot = numpy.asanyarray(his.history['loss'])
-plt.plot(x_plot, y_plot)
-plt.title("Loss rate per epoch")
-plt.ylabel("Loss")
-plt.xlabel("Epochs")
-plt.show()
-
-
+# split into train and test sets
+train_size = int(len(dataset) * 0.67)
+test_size = len(dataset) - train_size
+train, test = dataset[0:train_size,:], dataset[train_size:len(dataset),:]
 """
+# split into input (X) and output (Y) variables
+trainX = datasetTr[0:45000,6:26]
+trainY = datasetTr[0:45000,27]
+testX = datasetTe[53:209,6:26] #Sequence 2
+testY = datasetTe[53:209,27]
 
+
+# reshape input to be [samples, time steps, features]
+trainX = numpy.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
+testX = numpy.reshape(testX, (testX.shape[0], 1, testX.shape[1]))
+
+# create and fit the LSTM network
+model = Sequential()
+model.add(LSTM(4, input_shape=(1, 20)))
+model.add(Dense(1))
+model.compile(loss='mean_squared_error', optimizer='adam')
+model.fit(trainX, trainY, epochs=100, batch_size=100, verbose=1)
+
+# make predictions
+trainPredict = model.predict(trainX)
+testPredict = model.predict(testX)
+
+# invert predictions
+trainPredict = scaler.inverse_transform(trainPredict)
+trainY = scaler.inverse_transform([trainY])
+testPredict = scaler.inverse_transform(testPredict)
+testY = scaler.inverse_transform([testY])
+
+# calculate root mean squared error
+trainScore = math.sqrt(mean_squared_error(trainY[0], trainPredict[:,0]))
+print('Train Score: %.2f RMSE' % (trainScore))
+testScore = math.sqrt(mean_squared_error(testY[0], testPredict[:,0]))
+print('Test Score: %.2f RMSE' % (testScore))
+
+# shift train predictions for plotting
+trainPredictPlot = numpy.empty_like(dataset)
+trainPredictPlot[:, :] = numpy.nan
+trainPredictPlot[look_back:len(trainPredict)+look_back, :] = trainPredict
+                 
+# shift test predictions for plotting
+testPredictPlot = numpy.empty_like(dataset)
+testPredictPlot[:, :] = numpy.nan
+testPredictPlot[len(trainPredict)+(look_back*2)+1:len(dataset)-1, :] = testPredict
+
+# plot baseline and predictions
+plt.plot(scaler.inverse_transform(dataset))
+plt.plot(trainPredictPlot)
+plt.plot(testPredictPlot)
+plt.show()
