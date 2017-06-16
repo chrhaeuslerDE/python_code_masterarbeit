@@ -62,11 +62,16 @@ testX = testX.values
 testX = testX.astype('float32')
 
 # split into input (X) and output (Y) variables
-trainX = trainX[0:15000,]
-trainY = trainY[0:15000]
+trainX = trainX[0:45000,]
+trainY = trainY[0:45000]
 
+"""
 testX = testX[53:209,] #Sequence 2
 testY = testY[53:209]
+"""
+
+testX = testX[27164:27411,] #Sequence 2
+testY = testY[27164:27411]
 
 testY_orginal = testY
 
@@ -101,7 +106,7 @@ numInstances = len(testX)
 
 #Create machine learning algorithmen
 svr = SVR(kernel='rbf', gamma='auto', coef0=0.0, tol=0.001, \
-          C=1.0, epsilon=0.1, shrinking=True, cache_size=200, verbose=True,\
+          C=1.0, epsilon=0.05, shrinking=True, cache_size=500, verbose=False,\
           max_iter=-1)
 svr.fit(trainX, trainY)
 
@@ -125,7 +130,7 @@ plt.title("Support Vector Regression")
 Error = testPredict-testY_orginal
 
 #Time Series Plot
-orgLine = plt.plot(dataframeTest.RUL[53:209].values, color='blue', label='Original')
+orgLine = plt.plot(scalerTestY.inverse_transform(testY), color='blue', label='Original')
 predLine = plt.plot(testPredict, color='red', label='Predict')
 plt.legend()
 plt.title('Original vs. Predict Output (Seq: )')
