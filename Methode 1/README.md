@@ -1,4 +1,4 @@
-In Keras wird ein RNN mit LSTM gebaut. Programmname: RNN_LSTM_Versuch3.py
+###In Keras wird ein RNN mit LSTM gebaut. Programmname: RNN_LSTM_Versuch3.py
 
 Der Datensatz stamm von der Data Challenge 2008 der PHM Society.
 Die Trainings und Testdaten wurden durch eine zusätzliche Spalte "RUL" von mir ergänzt.
