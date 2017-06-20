@@ -25,7 +25,7 @@ history = callbacks.History()
 
 adam = optimizers.Adam(lr=0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
-                              patience=5, min_lr=0.0001)
+                              patience=10, min_lr=0.0001)
 early_stopping = callbacks.EarlyStopping(monitor='val_loss', patience=30, 
                                          mode='auto')
 
@@ -108,7 +108,7 @@ def build_model(layers):
 
 model = build_model([1, 50, 100, 1])
 
-model.fit(trainX, trainY, epochs=250, batch_size=50,validation_split=0.05 ,\
+model.fit(trainX, trainY, epochs=250, batch_size=150,validation_split=0.05 ,\
           verbose=1, callbacks=[history, reduce_lr, early_stopping])
 
 # make predictions
@@ -116,7 +116,7 @@ testPredict = model.predict(testX)
 
 # plot baseline and predictions
 plt.plot(testPredict)
-testY = datasetTe[53:209,27]
+testY = datasetTe[210:325,27]
 plt.plot(testY)
 plt.show()
 
