@@ -26,3 +26,5 @@ Nach mehreren Wochen des versuchens von unterschiedlichen Parametern und RNN Arc
 Neue Erkenntnis:
 Soeben änderte ich den Parameter 'patience' bei callbacks.ReduceLROnPlateau von 5 auf 10 und erhöhrte die Batch_size auf 150
 und erreichte zum ersten mal ein Ergebnis der 'val_loss' von unter 3200.
+
+![alt text](/path/to/img.jpg "Title")
