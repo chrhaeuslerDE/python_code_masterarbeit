@@ -1,4 +1,4 @@
-In Keras wird ein RNN mit LSTM gebaut. Programmname: RNN_LSTM_Versuch3.py
+### In Keras wird ein RNN mit LSTM gebaut. Programmname: RNN_LSTM_Versuch3.py
 
 Der Datensatz stamm von der Data Challenge 2008 der PHM Society.
 Die Trainings und Testdaten wurden durch eine zusätzliche Spalte "RUL" von mir ergänzt.
@@ -27,4 +27,4 @@ Neue Erkenntnis:
 Soeben änderte ich den Parameter 'patience' bei callbacks.ReduceLROnPlateau von 5 auf 10 und erhöhrte die Batch_size auf 150
 und erreichte zum ersten mal ein Ergebnis der 'val_loss' von unter 3200.
 
-![alt text](/path/to/img.jpg "Title")
+![alt text](rnn_versuch3.png "Resultat")
