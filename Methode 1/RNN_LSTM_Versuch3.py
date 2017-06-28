@@ -23,9 +23,9 @@ numpy.random.seed(7)
 
 history = callbacks.History()
 
-adam = optimizers.Adam(lr=0.1, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
+adam = optimizers.Adam(lr=0.001, beta_1=0.9, beta_2=0.999, epsilon=1e-08, decay=0.0)
 reduce_lr = callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.2,
-                              patience=10, min_lr=0.0001)
+                              patience=11, min_lr=0.00001)
 early_stopping = callbacks.EarlyStopping(monitor='val_loss', patience=30, 
                                          mode='auto')
 
@@ -40,8 +40,8 @@ datasetTe = datasetTe.astype('float32')
 
 
 # split into input (X) and output (Y) variables
-trainX = datasetTr[0:45000,6:26]
-trainY = datasetTr[0:45000,27]
+trainX = datasetTr[0:45916,6:26]
+trainY = datasetTr[0:45916,27]
 testX = datasetTe[210:325,6:26] #Sequence 3
 testY = datasetTe[210:325,27]
 
@@ -54,21 +54,6 @@ trainX = sc.transform(trainX)
 sc = StandardScaler()
 sc.fit(testX)
 testX = sc.transform(testX)
-
-"""
-# normalize the dataset
-scalerTrainX = MinMaxScaler(feature_range=(0, 1))
-trainX = scalerTrainX.fit_transform(trainX)
-
-scalerTrainY = MinMaxScaler(feature_range=(0, 1))
-trainY = scalerTrainY.fit_transform(trainY)
-
-scalerTestX = MinMaxScaler(feature_range=(0, 1))
-testX = scalerTestX.fit_transform(testX)
-
-scalerTestY = MinMaxScaler(feature_range=(0, 1))
-testY = scalerTestY.fit_transform(testY)
-"""
 
 # reshape input to be [samples, time steps, features]
 trainX = numpy.reshape(trainX, (trainX.shape[0], 1, trainX.shape[1]))
@@ -85,30 +70,65 @@ def build_model(layers):
         layers[0],
         input_shape=(1,20),
         return_sequences=True))
-    model.add(Dropout(0.2))
+    model.add(Dropout(0.1))
 
     model.add(LSTM(
     layers[1],
     input_shape=(1,20),
     return_sequences=True))
-    model.add(Dropout(0.2))
+    model.add(Dropout(0.1))
+    
+    model.add(LSTM(
+    layers[1],
+    input_shape=(1,20),
+    return_sequences=True))
+    model.add(Dropout(0.1))
+    
+    model.add(LSTM(
+    layers[1],
+    input_shape=(1,20),
+    return_sequences=True))
+    model.add(Dropout(0.1))
+    
+    model.add(LSTM(
+    layers[1],
+    input_shape=(1,20),
+    return_sequences=True))
+    model.add(Dropout(0.1))
+    
+    model.add(LSTM(
+    layers[1],
+    input_shape=(1,20),
+    return_sequences=True))
+    model.add(Dropout(0.1))
+    
+    model.add(LSTM(
+    layers[1],
+    input_shape=(1,20),
+    return_sequences=True))
+    model.add(Dropout(0.1))
+    
+    model.add(LSTM(
+    layers[1],
+    input_shape=(1,20),
+    return_sequences=True))
+    model.add(Dropout(0.1))
 
     model.add(LSTM(
-        layers[2],
+        layers[1],
         return_sequences=False))
-    model.add(Dropout(0.2))
+    model.add(Dropout(0.1))
 
-    model.add(Dense(
-            layers[3]))
+    model.add(Dense(1))
     model.add(Activation("linear"))
 
-    model.compile(loss="mse", optimizer="adam")
+    model.compile(loss="mse", optimizer=adam)
     return model
 
 
-model = build_model([1, 50, 100, 1])
+model = build_model([21, 21, 1])
 
-model.fit(trainX, trainY, epochs=250, batch_size=150,validation_split=0.05 ,\
+model.fit(trainX, trainY, epochs=500, batch_size=125,validation_split=0.05 ,\
           verbose=1, callbacks=[history, reduce_lr, early_stopping])
 
 # make predictions
