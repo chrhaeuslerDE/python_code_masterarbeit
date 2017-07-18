@@ -4,6 +4,17 @@ Der Datensatz stamm von der Data Challenge 2008 der PHM Society.
 Die Trainings und Testdaten wurden durch eine zusätzliche Spalte "RUL" von mir ergänzt.
 Siehe train.txt und test.txt
 
+###Versuch 1
+Hier wurden alle Sensoren für das Training verwendet.
+
+* * *
+
+###Versuch 2
+Es wurden nur Features mit einer starken Korellation zur RUL verwendet,
+sprich nur Sensoren ausgewählt welche einen fallenden oder steigenden Sensorverlauf aufweisen.
+
+* * *
+
 
 Für das Training verwende ich alle Sensorwerte von 1 bis 21, die Features OP1-3 werden nicht im Training verwendet.
 Fast alle Samples werden für das Training verwendet (0-45.000).
@@ -28,3 +39,12 @@ Soeben änderte ich den Parameter 'patience' bei callbacks.ReduceLROnPlateau von
 und erreichte zum ersten mal ein Ergebnis der 'val_loss' von unter 3200.
 
 ![alt text](rnn_versuch3.png "Resultat")
+
+###Versuch 3
+Input: Alle Sensoren plus sechs HERI Features (PHM008_HERI_training.txt)
+
+###Versuch 4
+Wie in Versuch 2, nur diesmal mit den sechs HERI Features.
+
+
+
